@@ -11,11 +11,17 @@ import Foundation
 public class Cachable {
     public static var shared = Cachable()
 
+    public private(set) static var isOfflineModeEnabled: Bool = false
+
     public static var version: String {
         let bundle = Bundle(identifier: "ag.Cachable")
         let dictionary = bundle?.infoDictionary
         let version = dictionary?["CFBundleShortVersionString"] as! String
         let build = dictionary?["CFBundleVersion"] as! String
         return "\(version) build \(build)"
+    }
+
+    public static func setOfflineMode(enabled: Bool) {
+        isOfflineModeEnabled = enabled
     }
 }

@@ -14,12 +14,12 @@ extension Cachable {
         public static var shared = Storage()
 
         internal func createCacheRecord<T:Codable>(codable: T, forKey: String, filePath: String, expireDuration: TimeInterval) throws {
-            let netstoreRecord = CachableRecord.init(filePath: filePath, key: forKey, cachedAt: Date().timeIntervalSince1970, expireDuration: expireDuration)
+            let cachRecord = CachableRecord.init(filePath: filePath, key: forKey, cachedAt: Date().timeIntervalSince1970, expireDuration: expireDuration)
 
             do {
                 var currentRecords = try getCacheRecords()
                 currentRecords.removeAll { $0.key == forKey }
-                currentRecords.append(netstoreRecord)
+                currentRecords.append(cachRecord)
                 try saveCacheRecords(records: currentRecords)
             } catch {
                 throw error
@@ -27,7 +27,7 @@ extension Cachable {
         }
 
         internal func getCacheRecords() throws -> [CachableRecord] {
-            if let cacheRecordsData = UserDefaults.standard.data(forKey: "netstore-cache-records") {
+            if let cacheRecordsData = UserDefaults.standard.data(forKey: "Cachable-cache-records") {
                 do {
                     let decoded = try JSONDecoder().decode([CachableRecord].self, from: cacheRecordsData)
                     return decoded
@@ -39,7 +39,7 @@ extension Cachable {
         }
 
         internal func getCacheRecordFor(key: String) throws -> CachableRecord {
-            if let cacheRecordsData = UserDefaults.standard.data(forKey: "netstore-cache-records") {
+            if let cacheRecordsData = UserDefaults.standard.data(forKey: "Cachable-cache-records") {
                 do {
                     let decoded = try JSONDecoder().decode([CachableRecord].self, from: cacheRecordsData)
                     let possibleRecords = decoded.filter { $0.key == key}
@@ -49,23 +49,23 @@ extension Cachable {
                             print("record not expired, return from cache")
                             return record
                         } else {
-                            if Netstore.offlineMode {
+                            if Cachable.isOfflineModeEnabled {
                                 print("record expired but offlineMode is enabled")
                                 return record
                             }
                             print("record expired")
-                            throw Netstore.Errors.cacheRecordExpired
+                            throw Cachable.Errors.cacheRecordExpired
                         }
                     }
                     print("no results")
-                    throw Netstore.Errors.noResults
+                    throw Cachable.Errors.noResults
 
                 } catch {
                     print(error)
                     throw error
                 }
             }
-            throw Netstore.Errors.noResults
+            throw Cachable.Errors.noResults
         }
 
         internal func isCacheRecordExpired(record: CachableRecord) -> Bool {
@@ -77,7 +77,7 @@ extension Cachable {
         internal func saveCacheRecords(records: [CachableRecord]) throws {
             do {
                 let encoded = try JSONEncoder().encode(records)
-                UserDefaults.standard.set(encoded, forKey: "netstore-cache-records")
+                UserDefaults.standard.set(encoded, forKey: "Cachable-cache-records")
             } catch {
                 throw error
             }
@@ -111,7 +111,7 @@ extension Cachable {
 
                 if updatedCacheRecords.count != cacheRecords.count {
                     let encoded = try JSONEncoder().encode(updatedCacheRecords)
-                    UserDefaults.standard.set(encoded, forKey: "netstore-cache-records")
+                    UserDefaults.standard.set(encoded, forKey: "Cachable-cache-records")
                     print("updated cache records")
                 }
 
@@ -122,10 +122,10 @@ extension Cachable {
 
 
 
-        public func writeToDisk<T:Codable>(codable: T, forKey: String, expireDuration: TimeInterval,  directory: Netstore.Storage.CacheDirectory = .caches) throws {
+        public func writeToDisk<T:Codable>(codable: T, forKey: String, expireDuration: TimeInterval,  directory: Cachable.Storage.CacheDirectory = .caches) throws {
 
             guard let url = directory.url else {
-                throw Netstore.Errors.directoryNotFound
+                throw Cachable.Errors.directoryNotFound
             }
 
             let filePath = url.appendingPathComponent(forKey, isDirectory: false)
@@ -138,21 +138,21 @@ extension Cachable {
                 try createCacheRecord(codable: codable, forKey: forKey, filePath: filePath.path, expireDuration: expireDuration)
 
             } catch {
-                print("Netstore", error.localizedDescription)
-                throw Netstore.Errors.failedToSave
+                print("Cachable", error.localizedDescription)
+                throw Cachable.Errors.failedToSave
             }
         }
 
 
 
-        public func readFromDisk<T:Codable>(readable: T.Type, forKey: String, directory: Netstore.Storage.CacheDirectory = .caches) throws -> T {
+        public func readFromDisk<T:Codable>(readable: T.Type, forKey: String, directory: Cachable.Storage.CacheDirectory = .caches) throws -> T {
             guard let url = directory.url else {
                 print("no url or file not found")
-                throw Netstore.Errors.noResults
+                throw Cachable.Errors.noResults
             }
 
             do {
-                let _ = try Netstore.Storage.shared.getCacheRecordFor(key: forKey)
+                let _ = try Cachable.Storage.shared.getCacheRecordFor(key: forKey)
                 let filePath = url.appendingPathComponent(forKey, isDirectory: false)
                 if let data = FileManager.default.contents(atPath: filePath.path) {
                     do {
@@ -160,11 +160,11 @@ extension Cachable {
                         return decodable
                     } catch {
                         print(error)
-                        throw Netstore.Errors.failedToDecode
+                        throw Cachable.Errors.failedToDecode
                     }
                 } else {
                     print("file not found")
-                    throw Netstore.Errors.fileNotFound
+                    throw Cachable.Errors.fileNotFound
                 }
             } catch {
                 throw error
