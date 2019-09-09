@@ -12,6 +12,9 @@
 		B03072AF232612FC00FB3D1D /* Cachable.h in Headers */ = {isa = PBXBuildFile; fileRef = B03072A1232612FB00FB3D1D /* Cachable.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		B03072BA2326134C00FB3D1D /* Cachable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03072B92326134C00FB3D1D /* Cachable.swift */; };
 		B03072BB2326141300FB3D1D /* Cachable.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03072B92326134C00FB3D1D /* Cachable.swift */; };
+		B03072BE2326158000FB3D1D /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03072BD2326158000FB3D1D /* Storage.swift */; };
+		B03072C1232615E100FB3D1D /* CachableRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03072C0232615E100FB3D1D /* CachableRecord.swift */; };
+		B03072C2232615F600FB3D1D /* CachableRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03072C0232615E100FB3D1D /* CachableRecord.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,6 +35,8 @@
 		B03072AC232612FB00FB3D1D /* CachableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachableTests.swift; sourceTree = "<group>"; };
 		B03072AE232612FB00FB3D1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B03072B92326134C00FB3D1D /* Cachable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cachable.swift; sourceTree = "<group>"; };
+		B03072BD2326158000FB3D1D /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
+		B03072C0232615E100FB3D1D /* CachableRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachableRecord.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,8 +99,26 @@
 				B03072A1232612FB00FB3D1D /* Cachable.h */,
 				B03072A2232612FB00FB3D1D /* Info.plist */,
 				B03072B92326134C00FB3D1D /* Cachable.swift */,
+				B03072BF232615C000FB3D1D /* Cachable */,
+				B03072BC2326156300FB3D1D /* Storage */,
 			);
 			path = Sources;
+			sourceTree = "<group>";
+		};
+		B03072BC2326156300FB3D1D /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				B03072BD2326158000FB3D1D /* Storage.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		B03072BF232615C000FB3D1D /* Cachable */ = {
+			isa = PBXGroup;
+			children = (
+				B03072C0232615E100FB3D1D /* CachableRecord.swift */,
+			);
+			path = Cachable;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -208,6 +231,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				B03072BA2326134C00FB3D1D /* Cachable.swift in Sources */,
+				B03072C1232615E100FB3D1D /* CachableRecord.swift in Sources */,
+				B03072BE2326158000FB3D1D /* Storage.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,6 +241,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B03072BB2326141300FB3D1D /* Cachable.swift in Sources */,
+				B03072C2232615F600FB3D1D /* CachableRecord.swift in Sources */,
 				B03072AD232612FB00FB3D1D /* CachableTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
