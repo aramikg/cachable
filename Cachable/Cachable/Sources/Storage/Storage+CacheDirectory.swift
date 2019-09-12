@@ -8,7 +8,7 @@
 
 import Foundation
 
-extension Cachable.Storage {
+extension CachableManager.Storage {
     public enum CacheDirectory {
         case documents
         case caches

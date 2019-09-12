@@ -9,7 +9,7 @@
 import Foundation
 
 
-extension Cachable {
+extension CachableManager {
     public class Storage {
         public static var shared = Storage()
 
@@ -23,6 +23,24 @@ extension Cachable {
                 try saveCacheRecords(records: currentRecords)
             } catch {
                 throw error
+            }
+        }
+
+        internal func updateCacheRecordExpireDuration(newExpireDuration: TimeInterval, forKey: String) {
+            do {
+                var cacheRecords = try getCacheRecords()
+
+                for (index, record) in cacheRecords.enumerated() {
+                    if record.key == forKey {
+                        cacheRecords[index].expireDuration = newExpireDuration
+                    }
+                }
+
+                let encoded = try JSONEncoder().encode(cacheRecords)
+                UserDefaults.standard.set(encoded, forKey: "Cachable-cache-records")
+
+            } catch {
+                Logger.log(message: "Cannot update record for \(forKey)")
             }
         }
 
@@ -49,23 +67,23 @@ extension Cachable {
                             print("record not expired, return from cache")
                             return record
                         } else {
-                            if Cachable.isOfflineModeEnabled {
+                            if CachableManager.isOfflineModeEnabled {
                                 print("record expired but offlineMode is enabled")
                                 return record
                             }
                             print("record expired")
-                            throw Cachable.Errors.cacheRecordExpired
+                            throw CachableManager.Errors.cacheRecordExpired
                         }
                     }
                     print("no results")
-                    throw Cachable.Errors.noResults
+                    throw CachableManager.Errors.noResults
 
                 } catch {
                     print(error)
                     throw error
                 }
             }
-            throw Cachable.Errors.noResults
+            throw CachableManager.Errors.noResults
         }
 
         internal func isCacheRecordExpired(record: CachableRecord) -> Bool {
@@ -75,9 +93,25 @@ extension Cachable {
         }
 
         internal func saveCacheRecords(records: [CachableRecord]) throws {
+            guard let url = CachableManager.Storage.CacheDirectory.documents.url else {
+                print("no url or file not found")
+                throw CachableManager.Errors.noResults
+            }
             do {
                 let encoded = try JSONEncoder().encode(records)
                 UserDefaults.standard.set(encoded, forKey: "Cachable-cache-records")
+                let filePath = url.appendingPathComponent("cachable-records", isDirectory: false)
+                do {
+
+                    if FileManager.default.fileExists(atPath: filePath.path) {
+                        try FileManager.default.removeItem(atPath: filePath.path)
+                    }
+                    FileManager.default.createFile(atPath: filePath.path, contents: encoded, attributes: nil)
+
+                } catch {
+                    print("Cachable", error.localizedDescription)
+                    throw CachableManager.Errors.failedToSave
+                }
             } catch {
                 throw error
             }
@@ -122,10 +156,10 @@ extension Cachable {
 
 
 
-        public func writeToDisk<T:Codable>(codable: T, forKey: String, expireDuration: TimeInterval,  directory: Cachable.Storage.CacheDirectory = .caches) throws {
+        public func writeToDisk<T:Codable>(codable: T, forKey: String, expireDuration: TimeInterval,  directory: CachableManager.Storage.CacheDirectory = .caches) throws {
 
             guard let url = directory.url else {
-                throw Cachable.Errors.directoryNotFound
+                throw CachableManager.Errors.directoryNotFound
             }
 
             let filePath = url.appendingPathComponent(forKey, isDirectory: false)
@@ -139,20 +173,20 @@ extension Cachable {
 
             } catch {
                 print("Cachable", error.localizedDescription)
-                throw Cachable.Errors.failedToSave
+                throw CachableManager.Errors.failedToSave
             }
         }
 
 
 
-        public func readFromDisk<T:Codable>(readable: T.Type, forKey: String, directory: Cachable.Storage.CacheDirectory = .caches) throws -> T {
+        public func readFromDisk<T:Codable>(readable: T.Type, forKey: String, directory: CachableManager.Storage.CacheDirectory = .caches) throws -> T {
             guard let url = directory.url else {
                 print("no url or file not found")
-                throw Cachable.Errors.noResults
+                throw CachableManager.Errors.noResults
             }
 
             do {
-                let _ = try Cachable.Storage.shared.getCacheRecordFor(key: forKey)
+                let _ = try CachableManager.Storage.shared.getCacheRecordFor(key: forKey)
                 let filePath = url.appendingPathComponent(forKey, isDirectory: false)
                 if let data = FileManager.default.contents(atPath: filePath.path) {
                     do {
@@ -160,11 +194,11 @@ extension Cachable {
                         return decodable
                     } catch {
                         print(error)
-                        throw Cachable.Errors.failedToDecode
+                        throw CachableManager.Errors.failedToDecode
                     }
                 } else {
                     print("file not found")
-                    throw Cachable.Errors.fileNotFound
+                    throw CachableManager.Errors.fileNotFound
                 }
             } catch {
                 throw error

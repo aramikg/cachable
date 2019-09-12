@@ -8,7 +8,7 @@
 
 import Foundation
 
-extension Cachable {
+extension CachableManager {
     enum Errors: Error {
         case fileNotFound
         case directoryNotFound

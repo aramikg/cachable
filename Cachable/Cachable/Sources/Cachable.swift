@@ -2,26 +2,49 @@
 //  Cachable.swift
 //  Cachable
 //
-//  Created by aramik on 9/8/19.
+//  Created by Aramik on 9/11/19.
 //  Copyright © 2019 aramik. All rights reserved.
 //
 
 import Foundation
+import Network
 
-public class Cachable {
-    public static var shared = Cachable()
 
-    public private(set) static var isOfflineModeEnabled: Bool = false
+public class Cachable<T:Codable> {
+    public typealias resultType = T
 
-    public static var version: String {
-        let bundle = Bundle(identifier: "ag.Cachable")
-        let dictionary = bundle?.infoDictionary
-        let version = dictionary?["CFBundleShortVersionString"] as! String
-        let build = dictionary?["CFBundleVersion"] as! String
-        return "\(version) build \(build)"
+    public var cacheKey: String { return "CacheKey" }
+    public var expireDuration: TimeInterval { return 300.0 }
+
+    init() {
+        CachableManager.Storage.shared.updateCacheRecordExpireDuration(newExpireDuration: expireDuration, forKey: cacheKey)
+        print("cache expire duration updated")
     }
 
-    public static func setOfflineMode(enabled: Bool) {
-        isOfflineModeEnabled = enabled
+    open func fetch(completion: @escaping ((T)->Void)) {
+
+    }
+
+    final func get(completion: @escaping ((T?)->Void)) {
+        print(CachableManager.Network.shared.monitor.currentPath)
+
+  
+        do {
+            let cachedVersion = try CachableManager.Storage.shared.readFromDisk(readable: resultType.self, forKey: cacheKey, directory: .caches)
+            completion(cachedVersion )
+        } catch {
+            fetch { results in
+                do {
+                    try CachableManager.Storage.shared.writeToDisk(codable: results, forKey: self.cacheKey,  expireDuration: self.expireDuration, directory: .caches)
+                    print("fetching from api")
+                    completion(results)
+                } catch {
+                    print(error)
+                    completion(nil)
+
+                }
+            }
+        }
+
     }
 }
