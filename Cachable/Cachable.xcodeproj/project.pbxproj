@@ -35,9 +35,14 @@
 		B0A0B66623298C9300722233 /* Errors.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03072C32326170700FB3D1D /* Errors.swift */; };
 		B0A0B66723298C9900722233 /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03072BD2326158000FB3D1D /* Storage.swift */; };
 		B0A0B66823298C9900722233 /* Storage+CacheDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B03072C52326177800FB3D1D /* Storage+CacheDirectory.swift */; };
-		B0A0B66A2329ACB700722233 /* UserPostsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0B6692329ACB700722233 /* UserPostsModel.swift */; };
 		B0A0B66D232AC0DC00722233 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0B66C232AC0DC00722233 /* Network.swift */; };
 		B0A0B66E232AC27600722233 /* Network.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0B66C232AC0DC00722233 /* Network.swift */; };
+		B0A0B673232AFAF200722233 /* FeedModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0B672232AFAF200722233 /* FeedModel.swift */; };
+		B0A0B674232AFAF700722233 /* FeedModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0B672232AFAF200722233 /* FeedModel.swift */; };
+		B0A0B676232AFE2200722233 /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0B675232AFE2200722233 /* API.swift */; };
+		B0A0B678232B1BD100722233 /* CacheStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0B677232B1BD100722233 /* CacheStatus.swift */; };
+		B0A0B679232B1D3500722233 /* CacheStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0B677232B1BD100722233 /* CacheStatus.swift */; };
+		B0A0B67A232B1D3600722233 /* CacheStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A0B677232B1BD100722233 /* CacheStatus.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,8 +76,10 @@
 		B0A0B6332328444E00722233 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B0A0B65E2329779700722233 /* Cachable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cachable.swift; sourceTree = "<group>"; };
 		B0A0B660232977D600722233 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
-		B0A0B6692329ACB700722233 /* UserPostsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserPostsModel.swift; sourceTree = "<group>"; };
 		B0A0B66C232AC0DC00722233 /* Network.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Network.swift; sourceTree = "<group>"; };
+		B0A0B672232AFAF200722233 /* FeedModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedModel.swift; sourceTree = "<group>"; };
+		B0A0B675232AFE2200722233 /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
+		B0A0B677232B1BD100722233 /* CacheStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStatus.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,7 +140,6 @@
 			isa = PBXGroup;
 			children = (
 				B03072AC232612FB00FB3D1D /* CachableTests.swift */,
-				B0A0B6692329ACB700722233 /* UserPostsModel.swift */,
 				B03072AE232612FB00FB3D1D /* Info.plist */,
 			);
 			path = CachableTests;
@@ -168,6 +174,7 @@
 			children = (
 				B03072C0232615E100FB3D1D /* CachableRecord.swift */,
 				B03072C32326170700FB3D1D /* Errors.swift */,
+				B0A0B677232B1BD100722233 /* CacheStatus.swift */,
 			);
 			path = Cachable;
 			sourceTree = "<group>";
@@ -177,6 +184,8 @@
 			children = (
 				B0A0B6272328444E00722233 /* AppDelegate.swift */,
 				B0A0B6292328444E00722233 /* ViewController.swift */,
+				B0A0B675232AFE2200722233 /* API.swift */,
+				B0A0B672232AFAF200722233 /* FeedModel.swift */,
 				B0A0B62B2328444E00722233 /* Main.storyboard */,
 				B0A0B62E2328444E00722233 /* Assets.xcassets */,
 				B0A0B6302328444E00722233 /* LaunchScreen.storyboard */,
@@ -337,6 +346,7 @@
 				B0A0B65F2329779700722233 /* Cachable.swift in Sources */,
 				B03072C42326170700FB3D1D /* Errors.swift in Sources */,
 				B0A0B66D232AC0DC00722233 /* Network.swift in Sources */,
+				B0A0B678232B1BD100722233 /* CacheStatus.swift in Sources */,
 				B03072BA2326134C00FB3D1D /* CachableManager.swift in Sources */,
 				B03072C1232615E100FB3D1D /* CachableRecord.swift in Sources */,
 				B0A0B661232977D600722233 /* Logger.swift in Sources */,
@@ -349,9 +359,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B0A0B66A2329ACB700722233 /* UserPostsModel.swift in Sources */,
+				B0A0B674232AFAF700722233 /* FeedModel.swift in Sources */,
 				B0A0B66823298C9900722233 /* Storage+CacheDirectory.swift in Sources */,
 				B03072BB2326141300FB3D1D /* CachableManager.swift in Sources */,
+				B0A0B67A232B1D3600722233 /* CacheStatus.swift in Sources */,
 				B0A0B66623298C9300722233 /* Errors.swift in Sources */,
 				B03072C2232615F600FB3D1D /* CachableRecord.swift in Sources */,
 				B0A0B66523298C8700722233 /* Cachable.swift in Sources */,
@@ -367,6 +378,7 @@
 				B0A0B66E232AC27600722233 /* Network.swift in Sources */,
 				B0A0B6572328447B00722233 /* CachableManager.swift in Sources */,
 				B0A0B6542328447900722233 /* Errors.swift in Sources */,
+				B0A0B679232B1D3500722233 /* CacheStatus.swift in Sources */,
 				B0A0B62A2328444E00722233 /* ViewController.swift in Sources */,
 				B0A0B6562328447900722233 /* Storage+CacheDirectory.swift in Sources */,
 				B0A0B6532328447900722233 /* CachableRecord.swift in Sources */,
@@ -374,6 +386,8 @@
 				B0A0B66323298C8700722233 /* Cachable.swift in Sources */,
 				B0A0B6552328447900722233 /* Storage.swift in Sources */,
 				B0A0B66223298C8700722233 /* Logger.swift in Sources */,
+				B0A0B676232AFE2200722233 /* API.swift in Sources */,
+				B0A0B673232AFAF200722233 /* FeedModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

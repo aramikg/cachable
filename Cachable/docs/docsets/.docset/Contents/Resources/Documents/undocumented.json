@@ -1,0 +1,12 @@
+{
+  "warnings": [
+    {
+      "file": "/Users/aramik/projects/cachable/Cachable/Cachable/Sources/CachableManager.swift",
+      "line": 13,
+      "symbol": "CachableManager.shared",
+      "symbol_kind": "source.lang.swift.decl.var.static",
+      "warning": "undocumented"
+    }
+  ],
+  "source_directory": "/Users/aramik/projects/cachable/Cachable"
+}

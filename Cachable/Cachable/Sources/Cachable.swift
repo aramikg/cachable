@@ -10,38 +10,41 @@ import Foundation
 import Network
 
 
+/// Create a Cachable object from any object that conforms to Codable.
 public class Cachable<T:Codable> {
-    public typealias resultType = T
 
+    /// Used as primary key to reterieve data as well as the file name that will be stored on disk for caching
     public var cacheKey: String { return "CacheKey" }
+
+    /// Number of seconds this object should expire after.
     public var expireDuration: TimeInterval { return 300.0 }
 
-    init() {
+    /// Keeps the expireDuration in sync with the cacheRecord for this item.
+    public init() {
         CachableManager.Storage.shared.updateCacheRecordExpireDuration(newExpireDuration: expireDuration, forKey: cacheKey)
-        print("cache expire duration updated")
     }
 
+    /// Used to reterive data for this cachable item.  If this is a cachable API, your URLRequest would go here. Make sure to call the completion handler when ready.
+    ///
+    /// - Parameter completion: Used to cache results for this item
     open func fetch(completion: @escaping ((T)->Void)) {
 
     }
 
-    final func get(completion: @escaping ((T?)->Void)) {
-        print(CachableManager.Network.shared.monitor.currentPath)
-
-  
+    /// Will check to see if the item exists in cache before using the 'fetch(completion:)' method to get new results.
+    ///
+    /// - Parameter completion: optional results of the defined generic type
+    final func get(completion: @escaping ((T?, CachableManager.CacheStatus)->Void)) {
         do {
-            let cachedVersion = try CachableManager.Storage.shared.readFromDisk(readable: resultType.self, forKey: cacheKey, directory: .caches)
-            completion(cachedVersion )
+            let cachedVersion = try CachableManager.Storage.shared.readFromDisk(readable: T.self, forKey: cacheKey, directory: .caches)
+            completion(cachedVersion, .cached)
         } catch {
             fetch { results in
                 do {
                     try CachableManager.Storage.shared.writeToDisk(codable: results, forKey: self.cacheKey,  expireDuration: self.expireDuration, directory: .caches)
-                    print("fetching from api")
-                    completion(results)
+                    completion(results, .fetched)
                 } catch {
-                    print(error)
-                    completion(nil)
-
+                    completion(nil, .none)
                 }
             }
         }

@@ -14,7 +14,7 @@ class CachableTests: XCTestCase {
 
 
     public class PostsAPI: CachableManager {
-
+        
     }
 
     override func setUp() {
@@ -39,3 +39,8 @@ class CachableTests: XCTestCase {
     }
 
 }
+
+
+
+
+

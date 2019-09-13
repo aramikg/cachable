@@ -12,21 +12,20 @@ import Network
 
 extension CachableManager {
 
-
-
+    /// Internal Network Utilities
     public class Network {
+
+        /// shared instance
         public static var shared = Network()
 
+        /// NWPathMonitor used for detecting network status
+        private let monitor = NWPathMonitor()
 
-        public let monitor = NWPathMonitor()
-        public var endpoint: NWConnection!
-        public var queue: DispatchQueue!
+        /// Queue used for monitoring
+        private var queue: DispatchQueue!
 
-
+        /// Start monitor for network changes; Does not take in to account weak signal.  Does not check Reachability / signal strength
         public func startMonitoring() {
-
-
-
             monitor.pathUpdateHandler = { path in
                 switch path.status {
                 case .requiresConnection:
@@ -44,8 +43,12 @@ extension CachableManager {
 
             queue = DispatchQueue(label: "Monitor")
             monitor.start(queue: queue)
-
-
         }
+
+        /// Stop monitoring for network changes
+        public func stopMonitoring() {
+            monitor.cancel()
+        }
+
     }
 }
