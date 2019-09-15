@@ -26,7 +26,7 @@ extension CachableManager {
         ///   - filePath: where to file is stored on disk
         ///   - expireDuration: how long should til the cache expires; in Seconds.
         /// - Throws: Error
-        internal func createCacheRecord<T:Codable>(codable: T, forKey: String, filePath: String, expireDuration: TimeInterval) throws {
+        public func createCacheRecord<T:Codable>(codable: T, forKey: String, filePath: String, expireDuration: TimeInterval) throws {
             let cachRecord = CachableRecord.init(filePath: filePath, key: forKey, cachedAt: Date().timeIntervalSince1970, expireDuration: expireDuration)
             do {
                 var currentRecords = try getCacheRecords()
@@ -43,7 +43,7 @@ extension CachableManager {
         /// - Parameters:
         ///   - newExpireDuration: new duration in seconds
         ///   - forKey: key for the cache item
-        internal func updateCacheRecordExpireDuration(newExpireDuration: TimeInterval, forKey: String) {
+        public func updateCacheRecordExpireDuration(newExpireDuration: TimeInterval, forKey: String) {
             do {
                 var cacheRecords = try getCacheRecords()
 
@@ -65,7 +65,7 @@ extension CachableManager {
         ///
         /// - Returns: Array of CacheRecords
         /// - Throws: Error
-        internal func getCacheRecords() throws -> [CachableRecord] {
+        public func getCacheRecords() throws -> [CachableRecord] {
             if let cacheRecordsData = UserDefaults.standard.data(forKey: "Cachable-cache-records") {
                 do {
                     let decoded = try JSONDecoder().decode([CachableRecord].self, from: cacheRecordsData)
@@ -82,7 +82,7 @@ extension CachableManager {
         /// - Parameter key: key for cached item
         /// - Returns: Single CacheRecord instance
         /// - Throws: Error / CachableError
-        internal func getCacheRecordFor(key: String) throws -> CachableRecord {
+        public func getCacheRecordFor(key: String) throws -> CachableRecord {
             if let cacheRecordsData = UserDefaults.standard.data(forKey: "Cachable-cache-records") {
                 do {
                     let decoded = try JSONDecoder().decode([CachableRecord].self, from: cacheRecordsData)
@@ -116,7 +116,7 @@ extension CachableManager {
         ///
         /// - Parameter record: the CacheRecord in question
         /// - Returns: Bool
-        internal func isCacheRecordExpired(record: CachableRecord) -> Bool {
+        public func isCacheRecordExpired(record: CachableRecord) -> Bool {
             let currentTimeStamp = Date().timeIntervalSince1970
             let expireTimeStamp = record.cachedAt + record.expireDuration
             return expireTimeStamp < currentTimeStamp
@@ -126,7 +126,7 @@ extension CachableManager {
         ///
         /// - Parameter records: An array of CacheRecords that will be saved
         /// - Throws: Error / CachableError
-        internal func saveCacheRecords(records: [CachableRecord]) throws {
+        public func saveCacheRecords(records: [CachableRecord]) throws {
             guard let url = CachableManager.Storage.CacheDirectory.documents.url else {
                 print("no url or file not found")
                 throw CachableManager.Errors.noResults
@@ -207,7 +207,7 @@ extension CachableManager {
         ///   - expireDuration: how long til the cache expires, in seconds
         ///   - directory: the directory the item should be stored under
         /// - Throws: Error / CachableError
-        internal func writeToDisk<T:Codable>(codable: T, forKey: String, expireDuration: TimeInterval,  directory: CachableManager.Storage.CacheDirectory = .caches) throws {
+        public func writeToDisk<T:Codable>(codable: T, forKey: String, expireDuration: TimeInterval,  directory: CachableManager.Storage.CacheDirectory = .caches) throws {
 
             guard let url = directory.url else {
                 throw CachableManager.Errors.directoryNotFound
@@ -238,7 +238,7 @@ extension CachableManager {
         ///   - directory: the directory the item should be stored under
         /// - Returns: the Item type passed in
         /// - Throws: Error / CachableError
-        internal func readFromDisk<T:Codable>(readable: T.Type, forKey: String, directory: CachableManager.Storage.CacheDirectory = .caches) throws -> T {
+        public func readFromDisk<T:Codable>(readable: T.Type, forKey: String, directory: CachableManager.Storage.CacheDirectory = .caches) throws -> T {
             guard let url = directory.url else {
                 print("no url or file not found")
                 throw CachableManager.Errors.noResults
@@ -269,7 +269,7 @@ extension CachableManager {
         ///
         /// - Parameter filePath: file location
         /// - Throws: Error
-        internal func removeFromDisk(filePath: String) throws {
+        public func removeFromDisk(filePath: String) throws {
             if FileManager.default.fileExists(atPath: filePath) {
                 do {
                     try FileManager.default.removeItem(atPath: filePath)
