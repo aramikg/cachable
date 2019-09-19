@@ -13,6 +13,13 @@ public class CachableManager {
 
     /// Shared Instance
     public static var shared = CachableManager()
+
+    public struct RequestData {
+        init(fromData: Data?) throws { guard fromData != nil else { throw Errors.failedToDecode }}
+    }
+
+    typealias RequestBuilder = () throws -> RequestData
+
     
     /// return whether or not Cachable is working in offline mode
     public private(set) static var isOfflineModeEnabled: Bool = false
@@ -33,4 +40,29 @@ public class CachableManager {
         isOfflineModeEnabled = enabled
     }
 
+    public static func fetch(request: URLRequest, completion: @escaping (RequestData) -> Void) {
+        URLSession.shared.dataTask(with: request) { (data, response, err) in
+            if data != nil {
+                let newData = try RequestData.init(fromData: data)
+                completion(newData)
+            }
+
+            }.resume()
+    }
+
+    public static func getDataFor(request: URLRequest) throws -> Data? {
+        do {
+            let data = try Storage.shared.readFromDisk(request: request)
+            return data
+        } catch {
+            throw error
+        }
+    }
+
+    public static func getFromServer(request: URLRequest) throws -> Data? {
+
+    }
+
 }
+
+

@@ -17,16 +17,7 @@ extension CachableManager {
         /// Shared Instance
         public static var shared = Storage()
 
-        /// Creates a CacheRecord for the item being cached; Used to keep track of where the
-        /// cache is and how long til it expires.
-        ///
-        /// - Parameters:
-        ///   - codable: Item to cache
-        ///   - forKey: Key to retrieve the data
-        ///   - filePath: where to file is stored on disk
-        ///   - expireDuration: how long should til the cache expires; in Seconds.
-        /// - Throws: Error
-        internal func createCacheRecord<T:Codable>(codable: T, forKey: String, filePath: String, expireDuration: TimeInterval) throws {
+        internal func createCacheRecord(forKey: String, filePath: String, expireDuration: TimeInterval) throws {
             let cachRecord = CachableRecord.init(filePath: filePath, key: forKey, cachedAt: Date().timeIntervalSince1970, expireDuration: expireDuration)
             do {
                 var currentRecords = try getCacheRecords()
@@ -37,6 +28,7 @@ extension CachableManager {
                 throw error
             }
         }
+
 
         /// Used to update the expireDuration of a cacheRecord, in case it changes dynamically.
         ///
@@ -207,7 +199,29 @@ extension CachableManager {
         ///   - expireDuration: how long til the cache expires, in seconds
         ///   - directory: the directory the item should be stored under
         /// - Throws: Error / CachableError
-        internal func writeToDisk<T:Codable>(codable: T, forKey: String, expireDuration: TimeInterval,  directory: CachableManager.Storage.CacheDirectory = .caches) throws {
+//        internal func writeToDisk<T:Codable>(codable: T, forKey: String, expireDuration: TimeInterval,  directory: CachableManager.Storage.CacheDirectory = .caches) throws {
+//
+//            guard let url = directory.url else {
+//                throw CachableManager.Errors.directoryNotFound
+//            }
+//
+//            let filePath = url.appendingPathComponent(forKey, isDirectory: false)
+//            do {
+//                let data = try JSONEncoder().encode(codable)
+//                if FileManager.default.fileExists(atPath: filePath.path) {
+//                    try FileManager.default.removeItem(atPath: filePath.path)
+//                }
+//                FileManager.default.createFile(atPath: filePath.path, contents: data, attributes: nil)
+//                try createCacheRecord(codable: codable, forKey: forKey, filePath: filePath.path, expireDuration: expireDuration)
+//
+//            } catch {
+//                print("Cachable", error.localizedDescription)
+//                throw CachableManager.Errors.failedToSave
+//            }
+//        }
+
+
+        internal func writeToDisk(data: Data, forKey: String, expireDuration: TimeInterval,  directory: CachableManager.Storage.CacheDirectory = .caches) throws {
 
             guard let url = directory.url else {
                 throw CachableManager.Errors.directoryNotFound
@@ -215,12 +229,11 @@ extension CachableManager {
 
             let filePath = url.appendingPathComponent(forKey, isDirectory: false)
             do {
-                let data = try JSONEncoder().encode(codable)
                 if FileManager.default.fileExists(atPath: filePath.path) {
                     try FileManager.default.removeItem(atPath: filePath.path)
                 }
                 FileManager.default.createFile(atPath: filePath.path, contents: data, attributes: nil)
-                try createCacheRecord(codable: codable, forKey: forKey, filePath: filePath.path, expireDuration: expireDuration)
+                try createCacheRecord(forKey: forKey, filePath: filePath.path, expireDuration: expireDuration)
 
             } catch {
                 print("Cachable", error.localizedDescription)
@@ -228,6 +241,26 @@ extension CachableManager {
             }
         }
 
+
+        internal func readFromDisk(request: URLRequest, directory: CachableManager.Storage.CacheDirectory = .caches) throws -> Data {
+            guard let url = directory.url else {
+                print("no url or file not found")
+                throw CachableManager.Errors.noResults
+            }
+
+            do {
+                let _ = try CachableManager.Storage.shared.getCacheRecordFor(key: request.uuid)
+                let filePath = url.appendingPathComponent(request.uuid, isDirectory: false)
+                if let data = FileManager.default.contents(atPath: filePath.path) {
+                    return data
+                } else {
+                    print("file not found")
+                    throw CachableManager.Errors.fileNotFound
+                }
+            } catch {
+                throw error
+            }
+        }
 
 
         /// Read a cached item from disk
