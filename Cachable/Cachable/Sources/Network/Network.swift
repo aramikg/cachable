@@ -18,6 +18,10 @@ extension CachableManager {
         /// shared instance
         public static var shared = Network()
 
+
+        /// Used to monitor network status changes. Called after Cache is set to offline mode.
+        public var listener: ((NWPath.Status) -> Void)?
+
         /// NWPathMonitor used for detecting network status
         private let monitor = NWPathMonitor()
 
@@ -25,20 +29,22 @@ extension CachableManager {
         private var queue: DispatchQueue!
 
         /// Start monitor for network changes; Does not take in to account weak signal.  Does not check Reachability / signal strength
-        public func startMonitoring() {
+        public func startMonitoring(listener: ((NWPath.Status) -> Void)? = nil) {
+            Network.shared.listener = listener
+
             monitor.pathUpdateHandler = { path in
                 switch path.status {
                 case .requiresConnection:
-                    print("Requires Connection")
+                    CachableManager.setOfflineMode(enabled: true)
                 case .satisfied:
-                    print("Satisfied Connection")
                     CachableManager.setOfflineMode(enabled: false)
                 case .unsatisfied:
-                    print("Unsatisfied Connection")
                     CachableManager.setOfflineMode(enabled: true)
                 @unknown default:
-                    print("unknown case")
+                    Logger.log(message: "unknown case")
                 }
+
+                Network.shared.listener?(path.status)
             }
 
             queue = DispatchQueue(label: "Monitor")

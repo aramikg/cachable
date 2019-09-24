@@ -18,7 +18,7 @@ extension CachableManager {
         public static var shared = Storage()
 
         internal func createCacheRecord(forKey: String, filePath: String, expireDuration: TimeInterval) throws {
-            let cachRecord = CachableRecord.init(filePath: filePath, key: forKey, cachedAt: Date().timeIntervalSince1970, expireDuration: expireDuration)
+            let cachRecord = CachableRecord.init(filePath: filePath, key: forKey, cachedAt: Date().timeIntervalSince1970, lastUsed: 0, expireDuration: expireDuration, lastActionTime: 0)
             do {
                 var currentRecords = try getCacheRecords()
                 currentRecords.removeAll { $0.key == forKey }
@@ -53,6 +53,57 @@ extension CachableManager {
             }
         }
 
+
+
+        /// Used to update the expireDuration of a cacheRecord, in case it changes dynamically.
+        ///
+        /// - Parameters:
+        ///   - newExpireDuration: new duration in seconds
+        ///   - forKey: key for the cache item
+        internal func updateCacheRecordLastUsed(lastUsedTimestamp: TimeInterval, forKey: String) {
+            do {
+                var cacheRecords = try getCacheRecords()
+
+                for (index, record) in cacheRecords.enumerated() {
+                    if record.key == forKey {
+                        cacheRecords[index].lastUsed = lastUsedTimestamp
+                    }
+                }
+
+                let encoded = try JSONEncoder().encode(cacheRecords)
+                UserDefaults.standard.set(encoded, forKey: "Cachable-cache-records")
+
+            } catch {
+                Logger.log(message: "Cannot update record for \(forKey)")
+            }
+        }
+
+
+        /// Used to update the expireDuration of a cacheRecord, in case it changes dynamically.
+        ///
+        /// - Parameters:
+        ///   - newExpireDuration: new duration in seconds
+        ///   - forKey: key for the cache item
+        internal func updateCacheRecordLastAction(lastActionTimestamp: TimeInterval, forKey: String) {
+            do {
+                var cacheRecords = try getCacheRecords()
+
+                for (index, record) in cacheRecords.enumerated() {
+                    if record.key == forKey {
+                        cacheRecords[index].lastActionTime = lastActionTimestamp
+                    }
+                }
+
+                let encoded = try JSONEncoder().encode(cacheRecords)
+                UserDefaults.standard.set(encoded, forKey: "Cachable-cache-records")
+                Logger.log(message: "Updated lastActionTime for \(forKey)")
+
+            } catch {
+                Logger.log(message: "Cannot update record for \(forKey)")
+            }
+        }
+
+
         /// Gets all records for cached items
         ///
         /// - Returns: Array of CacheRecords
@@ -68,6 +119,7 @@ extension CachableManager {
             }
             return [CachableRecord]()
         }
+    
 
         /// Get a single cacheRecord for the given item
         ///
@@ -104,6 +156,7 @@ extension CachableManager {
             throw CachableManager.Errors.noResults
         }
 
+
         /// Check to see if a cacheRecord is expired
         ///
         /// - Parameter record: the CacheRecord in question
@@ -113,6 +166,7 @@ extension CachableManager {
             let expireTimeStamp = record.cachedAt + record.expireDuration
             return expireTimeStamp < currentTimeStamp
         }
+
 
         /// Saves caches records to disk
         ///
@@ -189,38 +243,59 @@ extension CachableManager {
             }
         }
 
+        /// Removes only cache that hasn't been access for a given time period
+        ///
+        /// - Throws: Error
+        /// - Parameter timePeriod: - timeInterval in seconds default = 1 week
+        public func removeUnusedCache(timePeriod: TimeInterval = 604800) throws {
+            do {
+                var updatedCacheRecords = [CachableRecord]()
+                let cacheRecords = try getCacheRecords()
+                for record in cacheRecords {
+                    let currentTimeStamp = Date().timeIntervalSinceNow
+                    if currentTimeStamp - record.lastUsed > timePeriod {
+                        try removeFromDisk(filePath: record.filePath)
+                        Logger.log(message: "Removed unused cache for key: \(record.key)")
+                    } else {
+                        updatedCacheRecords.append(record)
+                    }
+                }
 
+                if updatedCacheRecords.count != cacheRecords.count {
+                    let encoded = try JSONEncoder().encode(updatedCacheRecords)
+                    UserDefaults.standard.set(encoded, forKey: "Cachable-cache-records")
+                    print("updated cache records")
+                }
 
-        /// Save an item to disk
+            } catch {
+                throw error
+            }
+        }
+
+        public func fileExists(forKey: String, usingDirectory: Storage.CacheDirectory) -> Bool {
+
+            if let fileURL = try? directoryPathFor(key: forKey, directory: usingDirectory) {
+                return FileManager.default.fileExists(atPath: fileURL.path)
+            }
+            return false
+        }
+
+        internal func directoryPathFor(key: String, directory: CachableManager.Storage.CacheDirectory = .caches) throws -> URL? {
+            guard let url = directory.url else {
+                throw CachableManager.Errors.directoryNotFound
+            }
+
+            return url.appendingPathComponent(key, isDirectory: false)
+        }
+
+        /// Save's Data to disk in the specified directory.
         ///
         /// - Parameters:
-        ///   - codable: item to save
-        ///   - forKey: key to store the item under
-        ///   - expireDuration: how long til the cache expires, in seconds
-        ///   - directory: the directory the item should be stored under
-        /// - Throws: Error / CachableError
-//        internal func writeToDisk<T:Codable>(codable: T, forKey: String, expireDuration: TimeInterval,  directory: CachableManager.Storage.CacheDirectory = .caches) throws {
-//
-//            guard let url = directory.url else {
-//                throw CachableManager.Errors.directoryNotFound
-//            }
-//
-//            let filePath = url.appendingPathComponent(forKey, isDirectory: false)
-//            do {
-//                let data = try JSONEncoder().encode(codable)
-//                if FileManager.default.fileExists(atPath: filePath.path) {
-//                    try FileManager.default.removeItem(atPath: filePath.path)
-//                }
-//                FileManager.default.createFile(atPath: filePath.path, contents: data, attributes: nil)
-//                try createCacheRecord(codable: codable, forKey: forKey, filePath: filePath.path, expireDuration: expireDuration)
-//
-//            } catch {
-//                print("Cachable", error.localizedDescription)
-//                throw CachableManager.Errors.failedToSave
-//            }
-//        }
-
-
+        ///   - data: Any Data
+        ///   - forKey: Key for what you want to save it under
+        ///   - expireDuration: When the data should expire
+        ///   - directory: The directory to be stored under.
+        /// - Throws: Error
         internal func writeToDisk(data: Data, forKey: String, expireDuration: TimeInterval,  directory: CachableManager.Storage.CacheDirectory = .caches) throws {
 
             guard let url = directory.url else {
@@ -241,17 +316,19 @@ extension CachableManager {
             }
         }
 
-
+        /// Read a file from disk based on the UUID created from the URLRequest
+        ///
+        /// - Parameters:
+        ///   - request: The full URLRequest with headers and params
+        ///   - directory: the directory to be saved in
+        /// - Returns: If found, returns Data which can be decoded to a type depending on the response.
+        /// - Throws: Error
         internal func readFromDisk(request: URLRequest, directory: CachableManager.Storage.CacheDirectory = .caches) throws -> Data {
-            guard let url = directory.url else {
-                print("no url or file not found")
-                throw CachableManager.Errors.noResults
-            }
 
             do {
-                let _ = try CachableManager.Storage.shared.getCacheRecordFor(key: request.uuid)
-                let filePath = url.appendingPathComponent(request.uuid, isDirectory: false)
-                if let data = FileManager.default.contents(atPath: filePath.path) {
+                let cacheRecord = try CachableManager.Storage.shared.getCacheRecordFor(key: request.uuid)
+
+                if let data = FileManager.default.contents(atPath: cacheRecord.filePath) {
                     return data
                 } else {
                     print("file not found")
@@ -261,42 +338,6 @@ extension CachableManager {
                 throw error
             }
         }
-
-
-        /// Read a cached item from disk
-        ///
-        /// - Parameters:
-        ///   - readable: Type the item should be decoded to
-        ///   - forKey: key to retreive the item
-        ///   - directory: the directory the item should be stored under
-        /// - Returns: the Item type passed in
-        /// - Throws: Error / CachableError
-        internal func readFromDisk<T:Codable>(readable: T.Type, forKey: String, directory: CachableManager.Storage.CacheDirectory = .caches) throws -> T {
-            guard let url = directory.url else {
-                print("no url or file not found")
-                throw CachableManager.Errors.noResults
-            }
-
-            do {
-                let _ = try CachableManager.Storage.shared.getCacheRecordFor(key: forKey)
-                let filePath = url.appendingPathComponent(forKey, isDirectory: false)
-                if let data = FileManager.default.contents(atPath: filePath.path) {
-                    do {
-                        let decodable = try JSONDecoder().decode(readable, from: data)
-                        return decodable
-                    } catch {
-                        print(error)
-                        throw CachableManager.Errors.failedToDecode
-                    }
-                } else {
-                    print("file not found")
-                    throw CachableManager.Errors.fileNotFound
-                }
-            } catch {
-                throw error
-            }
-        }
-
 
         /// Remove file from disk
         ///

@@ -8,21 +8,36 @@
 
 import Foundation
 
-
 extension URLRequest {
 
-    private struct ExpireDuration {
-        static var Key: UInt8 = 0
+    struct Container {
+        static var expireDuartion = TimeInterval.init(exactly: 0)
     }
 
-    var expireDuration: TimeInterval? {
+    var expireDuration: TimeInterval {
         get {
-            return objc_getAssociatedObject(self, &ExpireDuration.Key) as? Double
+            return Container.expireDuartion ?? 0
         }
 
         set(newValue) {
-            objc_setAssociatedObject(self, &ExpireDuration.Key, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+             Container.expireDuartion = newValue
         }
+    }
+
+    var uuid: String {
+        var id = self.url?.absoluteString ?? ""
+
+        if let headers = self.allHTTPHeaderFields {
+            let headersArray = headers.compactMap { "\($0.value)" }
+            let sortedHeaders = headersArray.sorted { $0 < $1 }
+            let headersString = sortedHeaders.joined(separator: "-")
+            id.append("-\(headersString)")
+        }
+
+        id = id.replacingOccurrences(of: "https://", with: "")
+        id = id.replacingOccurrences(of: "/", with: "-")
+        id = id.replacingOccurrences(of: ".", with: "-")
+        return id
     }
 
 }

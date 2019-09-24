@@ -10,28 +10,32 @@ import UIKit
 
 class ViewController: UIViewController {
 
-    let feedAPI = API.Feed.init()
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
         CachableManager.Network.shared.startMonitoring()
+        try? CachableManager.Storage.shared.removeAllCache()
+    }
+
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        print( CachableManager.shared.operationQueue.operationCount)
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        feedAPI.get { posts, status in
-            print(posts?.count ?? "No Posts")
-        }
 
         let url = URL(string: "https://jsonplaceholder.typicode.com/posts")!
         var request = URLRequest.init(url: url)
         request.httpMethod = "GET"
         request.allHTTPHeaderFields = ["last-page-key":"ksjdflk23jlfkjk","jwt":"kj388","other-header":"hello"]
-        request.expireDuration = 1000.0
-        let cache = Cache.init(directory: .documents, maxSizeMB: 100)
-        cache.request(request: request) { (data, response, err) in
-            print(data)
+        request.expireDuration = 10.0
+
+        CachableManager.shared.fetch(request: request) { (data, response, err) in
+            guard err == nil else { print(err?.localizedDescription ?? "Error"); return }
+            print(String(describing: data), CachableManager.shared.operationQueue.operationCount)
         }
+
+    
+
     }
 
 

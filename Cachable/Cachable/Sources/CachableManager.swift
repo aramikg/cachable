@@ -14,19 +14,16 @@ public class CachableManager {
     /// Shared Instance
     public static var shared = CachableManager()
 
-    public struct RequestData {
-        init(fromData: Data?) throws { guard fromData != nil else { throw Errors.failedToDecode }}
-    }
 
-    typealias RequestBuilder = () throws -> RequestData
-
+    public var operationQueue = OperationQueue()
+    public var operations = [Operation]()
     
     /// return whether or not Cachable is working in offline mode
     public private(set) static var isOfflineModeEnabled: Bool = false
 
     /// returns Cachable version
     public static var version: String {
-        let bundle = Bundle(identifier: "a4c.Cachable")
+        let bundle = Bundle(identifier: "com.Cachable")
         let dictionary = bundle?.infoDictionary
         let version = dictionary?["CFBundleShortVersionString"] as! String
         let build = dictionary?["CFBundleVersion"] as! String
@@ -40,28 +37,49 @@ public class CachableManager {
         isOfflineModeEnabled = enabled
     }
 
-    public static func fetch(request: URLRequest, completion: @escaping (RequestData) -> Void) {
-        URLSession.shared.dataTask(with: request) { (data, response, err) in
-            if data != nil {
-                let newData = try RequestData.init(fromData: data)
-                completion(newData)
-            }
+    
+    public func fetch(request: URLRequest, completion: @escaping (Data?, URLResponse?, Error?) -> Void) {
+        guard request.httpMethod != "POST" else {
+            networkRequest(request: request, completion: completion)
+            return
+        }
 
-            }.resume()
+        do {
+            let data = try getDataFor(request: request)
+            completion(data, nil, nil)
+        } catch {
+            networkRequest(request: request, completion: completion)
+        }
     }
 
-    public static func getDataFor(request: URLRequest) throws -> Data? {
+    private func networkRequest(request: URLRequest, completion: @escaping (Data?, URLResponse?, Error?) -> Void) {
+        let operation = CacheRequestOperation.init(withRequest: request) { (requestData, response, err) in
+            if request.httpMethod == "GET", let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode < 400, let data = requestData {
+               do {
+                   try Storage.shared.writeToDisk(data: data , forKey: request.uuid, expireDuration: request.expireDuration, directory: .documents)
+                } catch {
+                    print(error)
+                    completion(nil, nil, nil)
+                    return
+                }
+            } else {
+                Storage.shared.updateCacheRecordLastAction(lastActionTimestamp: Date().timeIntervalSince1970, forKey: request.uuid)
+            }
+            completion(requestData, response, err)
+        }
+        operationQueue.addOperation(operation)
+    }
+
+    public func getDataFor(request: URLRequest) throws -> Data? {
         do {
-            let data = try Storage.shared.readFromDisk(request: request)
+            let data = try Storage.shared.readFromDisk(request: request, directory: .documents)
             return data
         } catch {
             throw error
         }
     }
 
-    public static func getFromServer(request: URLRequest) throws -> Data? {
 
-    }
 
 }
 

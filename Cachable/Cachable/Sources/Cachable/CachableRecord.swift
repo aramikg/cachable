@@ -21,6 +21,12 @@ internal struct CachableRecord: Codable {
     /// The timestamp of when the item was cached
     public var cachedAt: TimeInterval
 
+    /// The timestamp of the last time this record was read
+    public var lastUsed: TimeInterval
+
     /// Number of second this items cache should expire
     public var expireDuration: TimeInterval
+
+    /// Last time user modified this record
+    public var lastActionTime: TimeInterval
 }

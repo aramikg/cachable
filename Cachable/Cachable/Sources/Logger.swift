@@ -15,7 +15,6 @@ extension CachableManager {
 
         /// set to `true` to see all debug print statements
         public static var debug = true
-
         /// Used Internal to contain all print statments
         ///
         /// - Parameter message: message for debugging
