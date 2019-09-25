@@ -43,7 +43,6 @@ public class CachableManager {
             networkRequest(request: request, completion: completion)
             return
         }
-
         do {
             let data = try getDataFor(request: request)
             completion(data, nil, nil)
@@ -53,6 +52,7 @@ public class CachableManager {
     }
 
     private func networkRequest(request: URLRequest, completion: @escaping (Data?, URLResponse?, Error?) -> Void) {
+        Logger.log(message: "Making network request for \(request.uuid)")
         let operation = CacheRequestOperation.init(withRequest: request) { (requestData, response, err) in
             if request.httpMethod == "GET", let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode < 400, let data = requestData {
                do {

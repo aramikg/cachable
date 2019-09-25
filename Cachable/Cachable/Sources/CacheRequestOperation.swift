@@ -46,6 +46,9 @@ public class CacheRequestOperation: Operation {
         }
 
         requestTask = session?.dataTask(with: request, completionHandler: { [weak self] (data, response, error) in
+            guard error == nil else {
+                return
+            }
             guard let self = self else { return }
             self.requestCompletionHandler(data, response, error)
             self.state = .finished

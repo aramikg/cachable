@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13122.16" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14868" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13104.12"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14824"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -9,16 +11,66 @@
         <!--View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="Example" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" translatesAutoresizingMaskIntoConstraints="NO" id="7cd-nU-GRf">
+                                <rect key="frame" x="40" y="686" width="334" height="176"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kAH-A2-4ll">
+                                        <rect key="frame" x="84" y="0.0" width="166" height="44"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="Zye-bF-ZWx"/>
+                                        </constraints>
+                                        <state key="normal" title="Make Cachable Request"/>
+                                        <connections>
+                                            <action selector="getPostsWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="vPR-ns-CjF"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kYq-QL-Ag1">
+                                        <rect key="frame" x="46" y="44" width="242" height="44"/>
+                                        <state key="normal" title="Remove Unused Cached for 1 week"/>
+                                        <connections>
+                                            <action selector="removeUnusedCacheWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Jzz-Nn-Fl6"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RUg-ye-XO8">
+                                        <rect key="frame" x="83.5" y="88" width="167" height="44"/>
+                                        <state key="normal" title="Remove Expired Cached"/>
+                                        <connections>
+                                            <action selector="removeExpireCacheWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jgJ-dk-5kP"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Usj-Zt-JcW">
+                                        <rect key="frame" x="105" y="132" width="124" height="44"/>
+                                        <state key="normal" title="Remove All Cache"/>
+                                        <connections>
+                                            <action selector="removeAllCacheWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="NhD-3d-7QE"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
+                        </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="7cd-nU-GRf" secondAttribute="bottom" id="HKa-fn-smH"/>
+                            <constraint firstItem="7cd-nU-GRf" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="40" id="P84-gf-LC3"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="7cd-nU-GRf" secondAttribute="trailing" constant="40" id="i0Q-vN-yeb"/>
+                        </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
+                    <connections>
+                        <outlet property="getPosts" destination="kAH-A2-4ll" id="By3-EZ-F9c"/>
+                        <outlet property="removeAllCacheButton" destination="Usj-Zt-JcW" id="Sf6-0c-11m"/>
+                        <outlet property="removeExpiredCacheButton" destination="RUg-ye-XO8" id="p8G-k9-hXA"/>
+                        <outlet property="removeUnusedCacheButton" destination="kYq-QL-Ag1" id="fS1-rV-uH0"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="139" y="131"/>
         </scene>
     </scenes>
 </document>

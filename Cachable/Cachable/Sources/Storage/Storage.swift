@@ -29,6 +29,25 @@ extension CachableManager {
             }
         }
 
+        internal func removeCacheRecord(filePath: String) throws {
+            do {
+                var cacheRecords = try getCacheRecords()
+
+
+                for (index, savedRecord) in cacheRecords.enumerated() {
+                    if savedRecord.filePath == filePath {
+                        cacheRecords.remove(at: index)
+                    }
+                }
+
+                try saveCacheRecords(records: cacheRecords)
+
+            } catch {
+                Logger.log(message: "Cannot update record for \(filePath)")
+                Logger.log(message: "\(error.localizedDescription)")
+            }
+        }
+
 
         /// Used to update the expireDuration of a cacheRecord, in case it changes dynamically.
         ///
@@ -47,6 +66,7 @@ extension CachableManager {
 
                 let encoded = try JSONEncoder().encode(cacheRecords)
                 UserDefaults.standard.set(encoded, forKey: "Cachable-cache-records")
+                Logger.log(message: "Updated cacheRecord Expiration Duration.")
 
             } catch {
                 Logger.log(message: "Cannot update record for \(forKey)")
@@ -72,7 +92,7 @@ extension CachableManager {
 
                 let encoded = try JSONEncoder().encode(cacheRecords)
                 UserDefaults.standard.set(encoded, forKey: "Cachable-cache-records")
-
+                Logger.log(message: "Updated cacheRecord Last Used.")
             } catch {
                 Logger.log(message: "Cannot update record for \(forKey)")
             }
@@ -134,22 +154,22 @@ extension CachableManager {
                     if let record = possibleRecords.first {
 
                         if !isCacheRecordExpired(record: record) {
-                            print("record not expired, return from cache")
+                            Logger.log(message: "record not expired, return from cache")
                             return record
                         } else {
                             if CachableManager.isOfflineModeEnabled {
-                                print("record expired but offlineMode is enabled")
+                                Logger.log(message: "record expired but offlineMode is enabled")
                                 return record
                             }
-                            print("record expired")
+                            Logger.log(message: "record expired")
                             throw CachableManager.Errors.cacheRecordExpired
                         }
                     }
-                    print("no results")
+                    Logger.log(message: "no results")
                     throw CachableManager.Errors.noResults
 
                 } catch {
-                    print(error)
+                    Logger.log(message: error.localizedDescription)
                     throw error
                 }
             }
@@ -226,7 +246,7 @@ extension CachableManager {
                     let expireTimeStamp = record.cachedAt + record.expireDuration
                     if expireTimeStamp <= currentTimeStamp {
                         try removeFromDisk(filePath: record.filePath)
-                        print("Removed expired cache", record.key)
+                        Logger.log(message: "Removed expired cache for \(record.key)")
                     } else {
                         updatedCacheRecords.append(record)
                     }
@@ -257,6 +277,7 @@ extension CachableManager {
                         try removeFromDisk(filePath: record.filePath)
                         Logger.log(message: "Removed unused cache for key: \(record.key)")
                     } else {
+                        Logger.log(message: "Skipping \(record.key), used within time period")
                         updatedCacheRecords.append(record)
                     }
                 }
@@ -347,9 +368,14 @@ extension CachableManager {
             if FileManager.default.fileExists(atPath: filePath) {
                 do {
                     try FileManager.default.removeItem(atPath: filePath)
+                    try removeCacheRecord(filePath: filePath)
+                    Logger.log(message: "Removed file for \(filePath)")
                 } catch {
+                    Logger.log(message: error.localizedDescription)
                     throw error
                 }
+            } else {
+                Logger.log(message: "File not found for \(filePath)")
             }
         }
 

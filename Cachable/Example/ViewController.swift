@@ -10,19 +10,18 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    @IBOutlet var getPosts: UIButton!
+    @IBOutlet var removeAllCacheButton: UIButton!
+    @IBOutlet var removeUnusedCacheButton: UIButton!
+    @IBOutlet var removeExpiredCacheButton: UIButton!
+
+
     override func viewDidLoad() {
         super.viewDidLoad()
-
         CachableManager.Network.shared.startMonitoring()
-        try? CachableManager.Storage.shared.removeAllCache()
     }
 
-    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-        print( CachableManager.shared.operationQueue.operationCount)
-    }
-
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-
+    @IBAction func getPosts(sender: UIButton) {
         let url = URL(string: "https://jsonplaceholder.typicode.com/posts")!
         var request = URLRequest.init(url: url)
         request.httpMethod = "GET"
@@ -31,13 +30,47 @@ class ViewController: UIViewController {
 
         CachableManager.shared.fetch(request: request) { (data, response, err) in
             guard err == nil else { print(err?.localizedDescription ?? "Error"); return }
-            print(String(describing: data), CachableManager.shared.operationQueue.operationCount)
+            print(data ?? "No Data")
+            self.removeAllCacheButton.setEnabled(enabled: true)
+            self.removeUnusedCacheButton.setEnabled(enabled: true)
+            self.removeExpiredCacheButton.setEnabled(enabled: true)
         }
-
-    
-
     }
 
+    @IBAction func removeExpireCache(sender: UIButton) {
+        do {
+            try CachableManager.Storage.shared.removeExpiredCache()
+            sender.setEnabled(enabled: false)
+        } catch {
+            sender.setEnabled(enabled: true)
+        }
+    }
+
+    @IBAction func removeAllCache(sender: UIButton) {
+        do {
+            try CachableManager.Storage.shared.removeAllCache()
+            sender.setEnabled(enabled: false)
+        } catch {
+            sender.setEnabled(enabled: true)
+        }
+    }
+
+    @IBAction func removeUnusedCache(sender: UIButton) {
+        do {
+            try CachableManager.Storage.shared.removeUnusedCache()
+            sender.setEnabled(enabled: false)
+        } catch {
+            sender.setEnabled(enabled: true)
+        }
+    }
 
 }
 
+
+extension UIButton {
+    func setEnabled(enabled : Bool) {
+        DispatchQueue.main.async {
+            self.isEnabled = enabled
+        }
+    }
+}
